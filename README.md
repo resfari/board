@@ -9,6 +9,21 @@
 python3 board.py 85 80
 python3 board.py -p example.txt
 
+
+Все возможные команды:
+################################################
+ python3 board.py [-help] | [M] [N] | [-p] [path]
+Example:
+ python3 board.py 70 70
+Where is:
+ [-help] - print usage
+ [M]     - Board hight (M >= 1)
+ [N]     - Board width (N >= 1)
+ [-p]    - flag for using path instead random generated board
+ [path]  - path of 'board' file  (example  python3 board.py -p test.txt)
+ Ctrl+C  - exit
+################################################
+
 ```
 
 ## Задание
