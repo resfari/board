@@ -109,15 +109,14 @@ def change_status(summ_conn, status):
             return 0
 
 
-def check_board(board, m, n):
+def check_board(board, m, n, status_cell):
     '''
     Обновляем статус каждой клетки на борде
     Если изменений состояния(changes) на доске не произошло,
     то выводится последнее состояние, программа завершается.
     '''
     changes = False
-    status_cell = [0, 0]
-
+    status_cell[0], status_cell[1] = 0, 0
     for i in range(m):
         for j in range(n):
             summ_conn = summ_connections(board, i, j, m, n)
@@ -144,34 +143,23 @@ def print_board(board, cases, status_cell):
 
 
 
-def thread_1(board, m, n, changes):
-    start = time.time()
-    print(start)
-    finish = start + 50
-    print(finish)
-    try:
-        while start < finish:
-            board, status_cell, changes = check_board(board, m, n)
-            time.sleep(0.5)
-            print("Here111111111111Here")
-            start += 1
-    except KeyboardInterrupt:
-        print_board(board, 3, None)
-        return
+def thread_1(board, m, n, changes, status_cell):
+    while changes:
+        try:
+            board, status_cell, changes = check_board(board, m, n, status_cell)
+        except KeyboardInterrupt:
+            print_board(board, 3, None)
+            exit(1)
+    exit(1)
 
-def thread_2(check_time, board):
-    check_time = 0
-
-    start = time.time()
-    print(start)
-    finish = start + 10
-    print(finish)
-    while start < finish:
-        time.sleep(1)
-        print("###############2222###############")
-        print_board(board, 1, None)
-        start += 1
-    return
+def thread_2(check_time, board, changes, status_cell):
+    while changes:
+        try:
+            time.sleep(1)
+            print_board(board, 2, status_cell)
+        except KeyboardInterrupt:
+            exit(1)
+    exit(1)
 
 
 
@@ -182,16 +170,23 @@ def programm(board_size, flag_p, path):
     '''
     m = board_size[0]
     n = board_size[1]
+    status_cell = [0, 0]
     board, m, n = generate_board(m, n, flag_p, path)
     print_board(board, 1, None)
     check_time = time.time()
-    changes = True
-    thread1 = Thread(target=thread_2, args=(check_time, board))
-    thread2 = Thread(target=thread_1, args=(board, m, n, changes))
-    thread2.start()
-    thread1.start()
-    thread2.join()
-    thread1.join()
+    mass = [True]
+    thread1 = Thread(target=thread_2, args=(check_time, board, mass[0], status_cell), daemon=True)
+    thread2 = Thread(target=thread_1, args=(board, m, n, mass[0], status_cell), daemon=True)
+    try:
+        thread2.start()
+        thread1.start()
+        while True:
+            time.sleep(100)
+    except KeyboardInterrupt:
+        print("The end")
+
+    #thread1.join()
+    #thread2.join()
     exit(1)
 
 
