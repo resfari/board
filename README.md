@@ -7,24 +7,24 @@
 
 ```
 Mac:
-python3 board.py 50 50
-python3 -p example.txt
+python3 board_threading.py 50 50
+python3 board_threading.py -p example.txt
 Else:
-python board.py 30 30
-python -p example.txt
+python board_threading.py 30 30
+python board_threading.py -p example.txt
 
 
 Все возможные команды:
 ################################################
- python3 board.py [-help] | [M] [N] | [-p] [path]
+ python3 board_threading.py [-help] | [M] [N] | [-p] [path]
 Example:
- python3 board.py 70 70
+ python3 board_threading.py 70 70
 Where is:
  [-help] - print usage
  [M]     - Board hight (M >= 1)
  [N]     - Board width (N >= 1)
  [-p]    - flag for using path instead random generated board
- [path]  - path of 'board' file  (example  python3 board.py -p test.txt)
+ [path]  - path of 'board' file  (example  python3 board_threading.py -p test.txt)
  Ctrl+C  - exit
 ################################################
 
