@@ -1,7 +1,6 @@
 import random
 import sys
 import time
-from threading import Thread
 
 USAGE = """
 #######################################################################
@@ -18,14 +17,8 @@ Where is:
 ########################################################################
 """
 
-class Changes():
-    """
-    The class is designed to track the status of the board
-    """
-    def __init__(self):
-        self.ch = True
 
-def print_usage(num): 
+def print_usage(num):
     print(USAGE)
     if num == 1:
         print("Wrong numbers in args")
@@ -55,12 +48,12 @@ def check_size_mass(mass):
 
 def generate_board(m, n):
     """
-    This function creates board(MxN) and 
+    This function creates board(MxN) and
     randomly fill it
     """
     board = []
     for j in range(m):
-            board.append([random.randint(0, 1) for i in range(n)])
+        board.append([random.randint(0, 1) for i in range(n)])
     return board, m, n
 
 
@@ -112,6 +105,9 @@ def summ_connections(board, y, x, m, n):
 
 
 def change_status(summ_conn, status):
+    """
+    This function determine status of the cell
+    """
     if status == 1:
         if summ_conn == 2 or summ_conn == 3:
             return 1
@@ -124,8 +120,36 @@ def change_status(summ_conn, status):
             return 0
 
 
+def print_status_cell(board):
+    status_cell = [0, 0]
+    for i in board:
+        for cell in i:
+            if cell == 1:
+                status_cell[0] += 1
+            else:
+                status_cell[1] += 1
+    print("Cell alive = {}\nCell died = {}".format(status_cell[0], status_cell[1]))
+
+
+def print_board(board, cases, status_cell):
+    mass = []
+    for j, i in enumerate(board):
+        mass.append(i)
+        print(*mass[j])
+    if cases != 0:
+        print("Cell alive = {}\nCell died = {}".format(status_cell[0], status_cell[1]))
+    if cases == 1:
+        print("No more changes on board")
+    if cases == 2:
+        print("Program ended")
+
+
 def check_board(board, m, n):
+    """
+    This function changes state of the board and counts alive cells
+    """
     changes = False
+    status_cell = [0, 0]
     for i in range(m):
         for j in range(n):
             summ_conn = summ_connections(board, i, j, m, n)
@@ -133,73 +157,36 @@ def check_board(board, m, n):
             board[i][j] = change_status(summ_conn, board[i][j])
             if prev != board[i][j]:
                 changes = True
-    return board, changes
-
-
-def print_status_cell(board):
-    status_cell = [0, 0]
-    for i in board:
-        for j in i:
-            if j == 1:
+            if board[i][j] == 1:
                 status_cell[0] += 1
             else:
                 status_cell[1] += 1
-    print("Cell alive = {}\nCell died = {}".format(status_cell[0], status_cell[1]))
-
-
-def print_board(board, cases):
-    mass = []
-    for j, i in enumerate(board):
-        mass.append(i)
-        print(*mass[j])
-    print_status_cell(mass)
-    if cases == 1:
-        print("No more changes on board")
-    if cases == 2:
-        print("Programm ended")
-
-
-def thread_1(board, m, n, changes):
-    """
-    Thread-1 constantly changes board status
-    """
-    while changes.ch:
-            board, changes.ch = check_board(board, m, n)
-    
-
-def thread_2(board, changes):
-    """
-    Thread-2 sleeps for 1 sec and then prints board and number of alive cells
-    """
-    while changes.ch:
-            time.sleep(1)
-            print_board(board, 0)
-    print_board(board, 1)
+    return board, changes, status_cell
 
 
 def programm(board_size, flag_p, path):
     """
-    Main function
-    Responsible for thread managment
-    If there is no changes on board thread will close or 
-    you can stop threads manually by pressing CTRL+C
+    This function is responsible for displaying status of the board.
+    If there is no changes on board program will close
     """
     if not flag_p:
         board, m, n = generate_board(board_size[0], board_size[1])
     else:
         board, m, n = create_from_path(path)
     status_cell = [0, 0]
-    print_board(board, 0)
-    changes = Changes()
-    thread1 = Thread(target=thread_2, args=(board, changes), daemon=True)
-    thread2 = Thread(target=thread_1, args=(board, m, n, changes), daemon=True)
+    print_board(board, 0, status_cell)
+    print_status_cell(board)
+    changes = True
     try:
-        thread1.start()
-        thread2.start()
-        thread1.join()
-        thread2.join()
+        while changes:
+            time.sleep(1)
+            board, changes, status_cell = check_board(board, m, n)
+            if changes == True:
+                print_board(board, 3, status_cell)
+            else:
+                print_board(board, 1, status_cell)
     except KeyboardInterrupt:
-        print_board(board, 2)
+        print_board(board, 2, status_cell)
 
 
 def check_arg(arg):
@@ -244,6 +231,7 @@ def validating():
         else:
             print_usage(0)
     return board_size, flag_p, path
+
 
 def main():
     board_size, flag_p, path = validating()
